@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Shopwell | Online Store</title>
+<meta name="description" content="Browse products, place orders, and keep track of every update in one straightforward shop.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-font-smoothing:antialiased}
+:root{
+  --ivory:#FAF9F6;
+  --white:#FFFFFF;
+  --violet:#6B4FA0;
+  --violet-light:#F0EBF8;
+  --violet-mid:#D5C9EC;
+  --violet-dark:#4E3578;
+  --text-primary:#2B1E3D;
+  --text-secondary:#6B5A82;
+  --text-muted:#9B8FB0;
+  --border:#E4D9F0;
+  --border-light:#EDE6F5;
+  --success:#2E7D52;
+  --success-bg:#EBF5F0;
+  --success-border:#B5DECA;
+  --warning:#B06A00;
+  --warning-bg:#FEF6E8;
+  --warning-border:#F0C98A;
+  --danger:#9E2E2E;
+  --danger-bg:#FBF0F0;
+  --danger-border:#E9B4B4;
+  --shadow-xs:0 1px 2px rgba(43,30,61,0.05);
+  --shadow-sm:0 2px 6px rgba(43,30,61,0.08);
+  --shadow-md:0 4px 16px rgba(43,30,61,0.10);
+  --shadow-lg:0 8px 32px rgba(43,30,61,0.12);
+  --radius-sm:6px;
+  --radius-md:10px;
+  --radius-lg:16px;
+  --transition:0.18s cubic-bezier(0.4,0,0.2,1);
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--ivory);color:var(--text-primary);min-height:100vh;line-height:1.6}
+
+/* ── TOAST ── */
+#toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+.toast{background:var(--white);border:1px solid var(--border);border-left:4px solid var(--violet);border-radius:var(--radius-md);padding:14px 18px;font-size:.875rem;color:var(--text-primary);box-shadow:var(--shadow-md);min-width:280px;max-width:380px;pointer-events:auto;animation:toastIn .22s ease}
+.toast.success{border-left-color:var(--success)}
+.toast.error{border-left-color:var(--danger)}
+.toast.warning{border-left-color:var(--warning)}
+.toast-title{font-weight:600;margin-bottom:2px}
+.toast-body{color:var(--text-secondary);font-size:.82rem}
+@keyframes toastIn{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(43,30,61,0.45);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:var(--radius-lg);padding:2rem;width:100%;max-width:440px;box-shadow:var(--shadow-lg);animation:modalIn .2s ease}
+@keyframes modalIn{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-title{font-size:1.15rem;font-weight:700;color:var(--text-primary);margin-bottom:.5rem}
+.modal-body{color:var(--text-secondary);font-size:.9rem;margin-bottom:1.5rem;line-height:1.6}
+.modal-actions{display:flex;gap:.75rem;justify-content:flex-end}
+
+/* ── NAV ── */
+header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-xs)}
+.brand{font-size:1.15rem;font-weight:700;color:var(--violet);letter-spacing:-.02em}
+.brand span{color:var(--text-muted);font-weight:400;font-size:.85rem;margin-left:8px}
+.nav-right{display:flex;align-items:center;gap:1rem}
+.role-chip{background:var(--violet-light);color:var(--violet);font-size:.75rem;font-weight:600;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.05em}
+.user-name{font-size:.9rem;font-weight:500;color:var(--text-secondary)}
+
+/* ── LAYOUT ── */
+.container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
+.page{padding:2rem 0 4rem}
+
+/* ── AUTH PAGE ── */
+#auth-page{min-height:calc(100vh - 60px);display:flex;align-items:center;justify-content:center;padding:2rem}
+.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;width:100%;max-width:780px}
+@media(max-width:640px){.auth-grid{grid-template-columns:1fr}}
+.auth-panel{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;box-shadow:var(--shadow-sm)}
+.auth-heading{font-size:1.25rem;font-weight:700;color:var(--text-primary);margin-bottom:.35rem}
+.auth-sub{font-size:.85rem;color:var(--text-secondary);margin-bottom:1.5rem;line-height:1.5}
+.demo-accounts{margin-top:1.25rem;padding:1rem;background:var(--violet-light);border-radius:var(--radius-sm)}
+.demo-accounts h4{font-size:.78rem;font-weight:600;color:var(--violet);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.05em}
+.demo-row{display:flex;justify-content:space-between;padding:3px 0;color:var(--text-secondary);font-size:.8rem}
+.demo-row span:last-child{font-family:monospace;color:var(--text-primary)}
+
+/* ── FORMS ── */
+.form-group{margin-bottom:1rem}
+label{display:block;font-size:.82rem;font-weight:500;color:var(--text-secondary);margin-bottom:.35rem}
+input,select{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;font-family:inherit;color:var(--text-primary);background:var(--white);transition:border-color var(--transition),box-shadow var(--transition);outline:none}
+input:focus,select:focus{border-color:var(--violet);box-shadow:0 0 0 3px rgba(107,79,160,0.12)}
+input::placeholder{color:var(--text-muted)}
+.field-error{font-size:.78rem;color:var(--danger);margin-top:.25rem;display:none}
+.field-error.show{display:block}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border:none;border-radius:var(--radius-sm);font-size:.875rem;font-weight:500;cursor:pointer;font-family:inherit;transition:background var(--transition),box-shadow var(--transition),transform var(--transition);white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--violet);color:white;box-shadow:var(--shadow-xs)}
+.btn-primary:hover{background:var(--violet-dark)}
+.btn-secondary{background:var(--violet-light);color:var(--violet);border:1.5px solid var(--violet-mid)}
+.btn-secondary:hover{background:var(--violet-mid)}
+.btn-ghost{background:transparent;color:var(--text-secondary);border:1.5px solid var(--border)}
+.btn-ghost:hover{background:var(--ivory)}
+.btn-danger{background:var(--danger-bg);color:var(--danger);border:1.5px solid var(--danger-border)}
+.btn-danger:hover{background:var(--danger-border)}
+.btn-success{background:var(--success-bg);color:var(--success);border:1.5px solid var(--success-border)}
+.btn-success:hover{background:var(--success-border)}
+.btn-sm{padding:5px 12px;font-size:.8rem}
+.btn-full{width:100%}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* ── TABS ── */
+.tabs{display:flex;border-bottom:2px solid var(--border-light);margin-bottom:1.5rem}
+.tab-btn{padding:10px 20px;font-size:.875rem;font-weight:500;color:var(--text-secondary);background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;transition:color var(--transition),border-color var(--transition);font-family:inherit}
+.tab-btn.active{color:var(--violet);border-bottom-color:var(--violet)}
+.tab-btn:hover:not(.active){color:var(--text-primary)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ── STAT CARDS ── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.25rem 1.5rem;box-shadow:var(--shadow-xs)}
+.stat-label{font-size:.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.35rem}
+.stat-value{font-size:1.75rem;font-weight:700;color:var(--text-primary);line-height:1.2}
+.stat-sub{font-size:.78rem;color:var(--text-muted);margin-top:.25rem}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto;border-radius:var(--radius-md);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.875rem}
+th{text-align:left;padding:11px 14px;background:#F5F1FA;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);border-bottom:1px solid var(--border)}
+td{padding:12px 14px;border-bottom:1px solid var(--border-light);color:var(--text-primary);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#FDFBFF}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--text-muted);font-size:.875rem}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:4px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.badge-pending{background:#FEF6E8;color:#B06A00;border:1px solid #F0C98A}
+.badge-shipped{background:#EBF3FE;color:#1A5FB4;border:1px solid #9EC5F8}
+.badge-delivered{background:#EBF5F0;color:#2E7D52;border:1px solid #B5DECA}
+.badge-cancelled{background:#FBF0F0;color:#9E2E2E;border:1px solid #E9B4B4}
+.badge-admin{background:var(--violet-light);color:var(--violet);border:1px solid var(--violet-mid)}
+.badge-seller{background:#E8F4FD;color:#0F618F;border:1px solid #A8D4EE}
+.badge-buyer{background:#EBF5F0;color:#2E7D52;border:1px solid #B5DECA}
+
+/* ── STOCK ── */
+.stock-ok{color:var(--success);font-weight:600}
+.stock-low{color:var(--warning);font-weight:600}
+.stock-out{color:var(--danger);font-weight:600}
+
+/* ── LOW STOCK BANNER ── */
+.low-stock-banner{background:var(--warning-bg);border:1px solid var(--warning-border);border-radius:var(--radius-sm);padding:.75rem 1rem;margin-bottom:1rem;font-size:.85rem;color:var(--warning);font-weight:500;display:none}
+.low-stock-banner.show{display:block}
+
+/* ── PRODUCT CARDS ── */
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:1rem}
+.product-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-xs);transition:box-shadow var(--transition),transform var(--transition)}
+.product-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.product-card-thumb{height:110px;background:var(--violet-light);display:flex;align-items:center;justify-content:center;font-size:2.5rem}
+.product-card-body{padding:1rem}
+.product-card-name{font-weight:600;font-size:.875rem;color:var(--text-primary);margin-bottom:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.product-card-price{font-size:1.05rem;font-weight:700;color:var(--violet);margin:.35rem 0 .5rem}
+.product-card-footer{margin-top:.75rem}
+
+/* ── SEARCH ── */
+.search-bar{display:flex;gap:.625rem;margin-bottom:1.25rem;align-items:center}
+.search-bar input{flex:1;max-width:340px}
+
+/* ── ORDER CARDS ── */
+.order-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-xs);margin-bottom:1rem}
+.order-card-header{padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-light)}
+.order-card-body{padding:1rem 1.25rem}
+.order-meta{display:flex;gap:2rem;flex-wrap:wrap;font-size:.875rem;margin-bottom:1rem}
+.order-meta-label{font-size:.72rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem}
+.order-meta-value{font-weight:600}
+
+/* ── ORDER TIMELINE ── */
+.order-timeline{display:flex;align-items:flex-start;margin-top:.75rem}
+.tl-step{flex:1;text-align:center;font-size:.7rem;font-weight:500;color:var(--text-muted);position:relative}
+.tl-dot{width:22px;height:22px;border-radius:50%;background:var(--border);border:2px solid var(--border);margin:0 auto 5px;transition:background var(--transition)}
+.tl-step.done .tl-dot{background:var(--violet);border-color:var(--violet)}
+.tl-step.done{color:var(--violet)}
+.tl-step.active .tl-dot{background:var(--white);border-color:var(--violet);box-shadow:0 0 0 3px rgba(107,79,160,.18)}
+.tl-step.active{color:var(--violet);font-weight:600}
+.tl-line{height:2px;background:var(--border);flex:1;margin-top:11px;transition:background var(--transition)}
+.tl-line.done{background:var(--violet)}
+
+/* ── SECTION ── */
+.section-title{font-size:1.1rem;font-weight:700;color:var(--text-primary);margin-bottom:.2rem}
+.section-sub{font-size:.85rem;color:var(--text-secondary);margin-bottom:1.25rem}
+.toolbar{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);padding:1.25rem 2rem;text-align:center;font-size:.8rem;color:var(--text-muted)}
+
+/* Calm, editorial storefront refinements */
+body{background:#f8f7f2;color:#302a32}
+:root{--ivory:#f8f7f2;--violet:#725c78;--violet-dark:#5b465f;--violet-light:#f1edf1;--violet-mid:#ddd4df;--text-primary:#302a32;--text-secondary:#665e67;--text-muted:#847c82;--border:#e5e0dc;--border-light:#eeeae6;--shadow-xs:0 1px 3px rgba(48,42,50,.04);--shadow-sm:0 3px 12px rgba(48,42,50,.06);--shadow-md:0 8px 24px rgba(48,42,50,.09)}
+header{height:68px;padding:0 max(1.25rem,calc((100vw - 1120px)/2));background:#fcfbf8;border-color:#e9e5df}
+.brand{color:#5c485e;font-family:Georgia,serif;font-size:1.35rem;letter-spacing:-.04em}
+.brand span{color:var(--text-muted);font-family:inherit;font-size:.8rem;letter-spacing:0}
+.container{max-width:1120px}.page{padding-top:2.5rem}
+#auth-page{min-height:calc(100vh - 150px);align-items:flex-start;padding:4rem 1.5rem 3rem}
+.auth-grid{max-width:950px;gap:1.25rem;align-items:stretch}
+.auth-intro{grid-column:1/-1;max-width:740px;margin:0 auto 1rem;text-align:center}
+.auth-intro h1{font:500 clamp(2rem,4vw,3rem)/1.12 Georgia,serif;letter-spacing:-.035em;color:#342d35}
+.auth-intro p{max-width:560px;margin:.8rem auto 0;color:#6c646b;font-size:1rem}
+.auth-panel{border-color:#e8e2dd;border-radius:12px;padding:1.8rem;box-shadow:0 8px 28px rgba(50,40,48,.045)}
+.auth-heading,.section-title{font-family:Georgia,serif;letter-spacing:-.02em;color:#38303a}
+.auth-heading{font-size:1.4rem}.auth-sub{font-size:.9rem}
+.demo-accounts{background:#f5f2ee;border:1px solid #ebe5df}.demo-accounts h4{color:#615361}
+input,select{min-height:42px;border-color:#dcd5cf;border-radius:5px}input:focus,select:focus{border-color:#796681;box-shadow:0 0 0 3px rgba(114,92,120,.12)}
+.btn{border-radius:5px;min-height:39px;transition:background .16s ease,border-color .16s ease,box-shadow .16s ease}
+.btn:active{transform:none}.btn-primary{background:#6c586e;box-shadow:none}.btn-primary:hover{background:#59465d}.btn-secondary{background:#f1edf1;color:#59465d;border-color:#ded5df}.btn-secondary:hover{background:#e9e1e9}
+.tab-btn{padding:12px 17px}.tab-btn.active{color:#5e4a62;border-bottom-color:#745e78}
+.stats-row{gap:0;border:1px solid #e8e2dd;border-radius:8px;background:#fff;overflow:hidden}.stat-card{border:0;border-right:1px solid #eee9e4;border-radius:0;box-shadow:none;padding:1.15rem 1.35rem}.stat-card:last-child{border-right:0}.stat-value{font-size:1.55rem;color:#3c343d}
+.table-wrap{border-radius:7px;border-color:#e8e2dd;background:#fff}th{background:#f6f4f0;color:#655d63}tbody tr:hover{background:#faf9f6}
+.product-grid{grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:1.1rem}.product-card{border-color:#e8e2dd;border-radius:8px;box-shadow:0 2px 10px rgba(48,42,50,.035);transition:box-shadow .16s ease}.product-card:hover{box-shadow:0 7px 18px rgba(48,42,50,.08);transform:none}.product-card-thumb{height:86px;background:#f4f1ec;color:#726575;font-size:1.1rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase}.product-card-body{padding:1.05rem}.product-card-name{font-size:.96rem;white-space:normal;min-height:2.7em}.product-card-price{color:#5e4a62}.product-card-footer{display:flex;gap:.55rem;align-items:center}.product-card-footer .btn-full{width:auto;flex:1}.save-button{width:40px;min-width:40px;padding:0;color:#645766;background:#fff;border:1px solid #ded7d3;font-size:1.2rem}.save-button[aria-pressed="true"]{background:#f3edf2;border-color:#cdbdcc;color:#674e68}
+.order-card{border-radius:8px;box-shadow:none}.order-card-header{gap:1rem;flex-wrap:wrap}.tl-dot{border-radius:3px}.tabs{border-color:#e6e0dc}
+.shop-intro{margin:0 0 1.8rem;padding:1.5rem 0 1.8rem;border-bottom:1px solid #e7e1dc}.shop-intro h1{font:500 clamp(2rem,4vw,2.7rem)/1.12 Georgia,serif;letter-spacing:-.035em;color:#342d35}.shop-intro p{margin-top:.6rem;max-width:620px;color:#6c646b;font-size:.98rem}
+.catalog-tools{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;margin:1.2rem 0 1.35rem}.catalog-tools .search-bar{flex:1;margin:0;min-width:min(100%,260px)}.catalog-tools .search-bar input{max-width:none}.catalog-tools select{width:auto;min-width:160px}.saved-empty{padding:2rem;border:1px dashed #dcd4ce;background:#fbfaf7;color:#6f676d;text-align:center}
+footer{display:flex;justify-content:center;align-items:center;gap:1.2rem;flex-wrap:wrap;background:#fcfbf8;color:#756d72}footer a{color:#645468;text-underline-offset:3px}
+@media(max-width:640px){header{padding:0 1rem}.page{padding-top:1.5rem}.stats-row{grid-template-columns:repeat(2,minmax(0,1fr))}.stat-card:nth-child(2){border-right:0}.stat-card:nth-child(-n+2){border-bottom:1px solid #eee9e4}.catalog-tools{align-items:stretch}.catalog-tools select{flex:1}.auth-intro{text-align:left}.auth-intro p{margin-left:0}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div id="toast-container"></div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal">
+    <div class="modal-title" id="confirm-title">Confirm Action</div>
+    <div class="modal-body" id="confirm-body">Are you sure?</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeConfirm(false)">Cancel</button>
+      <button class="btn btn-danger" id="confirm-ok-btn" onclick="closeConfirm(true)">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Input Modal -->
+<div class="modal-overlay" id="input-modal">
+  <div class="modal">
+    <div class="modal-title" id="input-modal-title">Enter Value</div>
+    <div style="margin-top:1rem">
+      <div class="form-group">
+        <label id="input-modal-label">Value</label>
+        <input id="input-modal-field" type="text">
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:1rem">
+      <button class="btn btn-ghost" onclick="closeInput(false)">Cancel</button>
+      <button class="btn btn-primary" onclick="closeInput(true)">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Product Modal -->
+<div class="modal-overlay" id="add-product-modal">
+  <div class="modal">
+    <div class="modal-title">Add New Product</div>
+    <div style="margin-top:1rem">
+      <div class="form-group"><label>Product Name</label><input id="mp-name" placeholder="e.g. Wireless Headphones"></div>
+      <div class="form-group"><label>Price (USD)</label><input id="mp-price" type="number" min="0" step="0.01" placeholder="0.00"></div>
+      <div class="form-group"><label>Stock Quantity</label><input id="mp-stock" type="number" min="0" placeholder="0"></div>
+    </div>
+    <div class="modal-actions" style="margin-top:1rem">
+      <button class="btn btn-ghost" onclick="closeModal('add-product-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAddProduct()">Add Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add User Modal (Admin) -->
+<div class="modal-overlay" id="add-user-modal">
+  <div class="modal">
+    <div class="modal-title">Create New User</div>
+    <div style="margin-top:1rem">
+      <div class="form-group"><label>Full Name</label><input id="mu-name" placeholder="Full name"></div>
+      <div class="form-group"><label>Email Address</label><input id="mu-email" type="email" placeholder="name@example.com"></div>
+      <div class="form-group"><label>Password</label><input id="mu-pass" type="password" placeholder="Password"></div>
+      <div class="form-group"><label>Role</label><select id="mu-role"><option value="BUYER">Buyer</option><option value="SELLER">Seller</option><option value="ADMIN">Admin</option></select></div>
+    </div>
+    <div class="modal-actions" style="margin-top:1rem">
+      <button class="btn btn-ghost" onclick="closeModal('add-user-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAddUser()">Create User</button>
+    </div>
+  </div>
+</div>
+
+<!-- Header -->
+<header>
+<div class="brand">Shopwell <span id="store-label">A considered everyday shop</span></div>
+  <div class="nav-right" id="nav-right" style="display:none">
+    <span class="user-name" id="nav-name"></span>
+    <span class="role-chip" id="nav-role"></span>
+    <button class="btn btn-ghost btn-sm" onclick="logout()">Sign out</button>
+  </div>
+</header>
+
+<!-- Auth Page -->
+<div id="auth-page">
+  <div class="auth-grid">
+    <div class="auth-intro"><h1>Shop useful everyday products.</h1><p>Compare current listings, check stock before ordering, and follow each order from your account.</p></div>
+    <div class="auth-panel">
+      <h2 class="auth-heading">Sign in to your account</h2>
+      <p class="auth-sub">Enter your credentials to access your dashboard.</p>
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Email address</label>
+          <input id="l-email" type="email" placeholder="you@example.com" required autocomplete="email">
+          <div class="field-error" id="l-err"></div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input id="l-pass" type="password" placeholder="Your password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="l-btn">Sign in</button>
+      </form>
+      <div class="demo-accounts">
+        <h4>Demo accounts</h4>
+        <div class="demo-row"><span>Admin</span><span>admin@shop.com / admin123</span></div>
+        <div class="demo-row"><span>Seller</span><span>seller@shop.com / seller123</span></div>
+        <div class="demo-row"><span>Buyer</span><span>buyer@shop.com / buyer123</span></div>
+      </div>
+    </div>
+    <div class="auth-panel">
+      <h2 class="auth-heading">Create an account</h2>
+      <p class="auth-sub">Join as a buyer or seller. Registration is instant.</p>
+      <form onsubmit="handleRegister(event)">
+        <div class="form-group"><label>Full name</label><input id="r-name" placeholder="Your name" required></div>
+        <div class="form-group"><label>Email address</label><input id="r-email" type="email" placeholder="you@example.com" required></div>
+        <div class="form-group"><label>Password</label><input id="r-pass" type="password" placeholder="At least 8 characters" minlength="8" required></div>
+        <div class="form-group"><label>Account type</label>
+          <select id="r-role">
+            <option value="BUYER">Buyer: browse and purchase products</option>
+            <option value="SELLER">Seller: list and manage products</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Create account</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- App Dashboards -->
+<div id="app" style="display:none">
+
+  <!-- BUYER -->
+  <div id="view-buyer" style="display:none">
+    <div class="container page">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('buyer','catalog',this)">Browse Products</button>
+        <button class="tab-btn" onclick="switchTab('buyer','saved',this)">Saved <span id="saved-count"></span></button>
+        <button class="tab-btn" onclick="switchTab('buyer','orders',this)">My Orders</button>
+      </div>
+      <div id="buyer-catalog" class="tab-content active">
+        <div class="shop-intro"><h1>Find something useful.</h1><p>Browse the current catalogue, check availability, and keep the items you are considering close at hand.</p></div>
+        <div class="search-bar">
+          <input id="b-search" placeholder="Search products..." oninput="debouncedSearch()">
+          <button class="btn btn-secondary btn-sm" onclick="clearSearch()">Clear</button>
+        </div>
+        <div class="catalog-tools"><label for="catalog-sort" style="margin:0">Sort by</label><select id="catalog-sort" onchange="loadBuyerCatalog()"><option value="featured">Available first</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option><option value="name">Name</option></select><label for="catalog-stock" style="margin:0">Availability</label><select id="catalog-stock" onchange="loadBuyerCatalog()"><option value="all">All products</option><option value="available">In stock</option><option value="low">Low stock</option></select></div>
+        <div id="product-grid" class="product-grid"></div>
+      </div>
+      <div id="buyer-saved" class="tab-content"><div class="section-title">Saved for later</div><div class="section-sub">Your shortlist is stored in this browser and stays on this device.</div><div id="saved-grid" class="product-grid"></div></div>
+      <div id="buyer-orders" class="tab-content">
+        <div class="section-title">My Orders</div>
+        <div class="section-sub">Track the status of every order you have placed.</div>
+        <div id="buyer-orders-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SELLER -->
+  <div id="view-seller" style="display:none">
+    <div class="container page">
+      <div class="low-stock-banner" id="low-stock-banner"></div>
+      <div class="stats-row" id="seller-stats"></div>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('seller','inventory',this)">Inventory</button>
+        <button class="tab-btn" onclick="switchTab('seller','sorders',this)">Orders</button>
+      </div>
+      <div id="seller-inventory" class="tab-content active">
+        <div class="toolbar">
+          <div style="flex:1">
+            <div class="section-title">My Products</div>
+            <div class="section-sub" style="margin:0">Manage your product listings and stock levels.</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('add-product-modal')">+ Add product</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Product Name</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
+            <tbody id="seller-product-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="seller-sorders" class="tab-content">
+        <div class="section-title">Customer Orders</div>
+        <div class="section-sub">Update delivery status for orders on your products.</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Order</th><th>Buyer</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th><th>Update</th></tr></thead>
+            <tbody id="seller-order-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="view-admin" style="display:none">
+    <div class="container page">
+      <div class="stats-row" id="admin-stats"></div>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('admin','users',this)">Users</button>
+        <button class="tab-btn" onclick="switchTab('admin','products',this)">Products</button>
+        <button class="tab-btn" onclick="switchTab('admin','aorders',this)">All Orders <span id="live-dot" style="display:inline-block;width:7px;height:7px;background:var(--success);border-radius:50%;margin-left:5px;vertical-align:middle"></span></button>
+      </div>
+      <div id="admin-users" class="tab-content active">
+        <div class="toolbar">
+          <div style="flex:1">
+            <div class="section-title">System Users</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('add-user-modal')">+ Add user</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Action</th></tr></thead>
+            <tbody id="admin-user-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="admin-products" class="tab-content">
+        <div class="section-title">All Products</div>
+        <div class="section-sub">View and moderate all products across the platform.</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Seller</th><th>Name</th><th>Price</th><th>Stock</th><th>Action</th></tr></thead>
+            <tbody id="admin-product-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="admin-aorders" class="tab-content">
+        <div class="toolbar">
+          <div>
+            <div class="section-title">All Orders</div>
+            <div class="section-sub" style="margin:0">Live view, refreshes every 3 seconds automatically.</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="loadAdminOrders()">Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Order</th><th>Buyer</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th><th>Update</th></tr></thead>
+            <tbody id="admin-order-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end #app -->
+
+<footer>
+  <p>Shopwell</p><a href="/privacy">Privacy</a><a href="/terms">Terms</a>
+</footer>
+
+<script>
+'use strict';
+let currentUser = null, autoRefreshTimer = null;
+
+/* ── TOAST ── */
+function toast(title, body, type) {
+  const c = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = 'toast' + (type ? ' ' + type : '');
+  el.innerHTML = '<div class="toast-title">' + escH(title) + '</div>' + (body ? '<div class="toast-body">' + escH(body) + '</div>' : '');
+  c.appendChild(el);
+  setTimeout(() => { el.style.transition = 'opacity .3s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 350); }, 3800);
+}
+
+function escH(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── MODALS ── */
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+let _confirmResolve = null;
+function confirm2(title, body, btnLabel) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-body').textContent = body;
+  document.getElementById('confirm-ok-btn').textContent = btnLabel || 'Confirm';
+  openModal('confirm-modal');
+  return new Promise(r => { _confirmResolve = r; });
+}
+function closeConfirm(ok) {
+  closeModal('confirm-modal');
+  if (_confirmResolve) { _confirmResolve(ok); _confirmResolve = null; }
+}
+
+let _inputResolve = null;
+function prompt2(title, label, defVal, type) {
+  document.getElementById('input-modal-title').textContent = title;
+  document.getElementById('input-modal-label').textContent = label || 'Value';
+  const f = document.getElementById('input-modal-field');
+  f.type = type || 'text'; f.value = defVal || '';
+  openModal('input-modal'); f.focus();
+  return new Promise(r => { _inputResolve = r; });
+}
+function closeInput(ok) {
+  closeModal('input-modal');
+  if (_inputResolve) { _inputResolve(ok ? document.getElementById('input-modal-field').value : null); _inputResolve = null; }
+}
+document.getElementById('input-modal-field').addEventListener('keydown', e => {
+  if (e.key === 'Enter') closeInput(true);
+  if (e.key === 'Escape') closeInput(false);
+});
+
+/* ── TABS ── */
+function switchTab(view, tab, btn) {
+  const root = document.getElementById('view-' + view);
+  root.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  root.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(view + '-' + tab).classList.add('active');
+  if (view === 'seller' && tab === 'sorders') loadSellerOrders();
+  if (view === 'buyer' && tab === 'orders') loadBuyerOrders();
+  if (view === 'buyer' && tab === 'saved') renderSavedProducts();
+  if (view === 'admin' && tab === 'aorders') loadAdminOrders();
+  if (view === 'admin' && tab === 'products') loadAdminProducts();
+}
+
+/* ── AUTH ── */
+async function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('l-btn');
+  btn.disabled = true; btn.textContent = 'Signing in...';
+  const err = document.getElementById('l-err');
+  err.classList.remove('show');
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ email: document.getElementById('l-email').value, password: document.getElementById('l-pass').value })
+    });
+    const d = await res.json();
+    if (d.success) { currentUser = d.user; renderSession(); }
+    else { err.textContent = d.message || 'Invalid credentials'; err.classList.add('show'); }
+  } catch (ex) { err.textContent = 'Connection error. Please try again.'; err.classList.add('show'); }
+  btn.disabled = false; btn.textContent = 'Sign in';
+}
+
+async function handleRegister(e) {
+  e.preventDefault();
+  const res = await fetch('/api/register', {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ name: document.getElementById('r-name').value, email: document.getElementById('r-email').value, password: document.getElementById('r-pass').value, role: document.getElementById('r-role').value })
+  });
+  const d = await res.json();
+  if (d.success) toast('Account created', 'You can now sign in with your credentials.', 'success');
+  else toast('Registration failed', d.message, 'error');
+}
+
+function renderSession() {
+  document.getElementById('auth-page').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('nav-right').style.display = 'flex';
+  document.getElementById('nav-name').textContent = currentUser.name;
+  document.getElementById('nav-role').textContent = currentUser.role;
+  document.getElementById('store-label').textContent = '/ ' + currentUser.name;
+  ['buyer', 'seller', 'admin'].forEach(v => document.getElementById('view-' + v).style.display = 'none');
+  const myView = currentUser.role.toLowerCase();
+  const el = document.getElementById('view-' + myView);
+  if (el) el.style.display = 'block';
+  if (myView === 'buyer') { renderSavedCount(); loadBuyerCatalog(); }
+  if (myView === 'seller') { loadSellerStats(); loadSellerProducts(); }
+  if (myView === 'admin') { loadAdminStats(); loadAdminUsers(); if (autoRefreshTimer) clearInterval(autoRefreshTimer); autoRefreshTimer = setInterval(loadAdminOrders, 3000); }
+}
+
+function logout() {
+  currentUser = null;
+  if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+  document.getElementById('auth-page').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('nav-right').style.display = 'none';
+  document.getElementById('store-label').textContent = 'A considered everyday shop';
+}
+
+/* ── HELPERS ── */
+function stockBadge(s) {
+  if (s === 0) return '<span class="stock-out">Out of stock</span>';
+  if (s < 5) return '<span class="stock-low">' + s + ' left</span>';
+  return '<span class="stock-ok">' + s + ' in stock</span>';
+}
+function statusBadge(s) {
+  const cl = { 'Pending': 'pending', 'Shipped': 'shipped', 'Delivered': 'delivered', 'Cancelled': 'cancelled' };
+  return '<span class="badge badge-' + (cl[s] || 'pending') + '">' + escH(s) + '</span>';
+}
+function roleBadge(r) {
+  return '<span class="badge badge-' + r.toLowerCase() + '">' + r + '</span>';
+}
+function productMark(name) { return escH(String(name || 'Product').trim().split(/\s+/).slice(0,2).map(part => part.charAt(0)).join('').toUpperCase()); }
+function orderTimeline(status) {
+  const steps = ['Pending', 'Shipped', 'Delivered'];
+  if (status === 'Cancelled') return '<span class="badge badge-cancelled">Cancelled</span>';
+  const idx = steps.indexOf(status);
+  let html = '<div class="order-timeline">';
+  steps.forEach((s, i) => {
+    if (i > 0) html += '<div class="tl-line' + (i <= idx ? ' done' : '') + '"></div>';
+    const cls = i < idx ? 'done' : i === idx ? 'active' : '';
+    html += '<div class="tl-step ' + cls + '"><div class="tl-dot"></div>' + s + '</div>';
+  });
+  return html + '</div>';
+}
+function emptyState(msg) {
+  return '<div class="empty-state">' + escH(msg) + '</div>';
+}
+
+/* ── DEBOUNCE ── */
+let _searchTimer = null;
+function debouncedSearch() { clearTimeout(_searchTimer); _searchTimer = setTimeout(loadBuyerCatalog, 280); }
+function clearSearch() { document.getElementById('b-search').value = ''; loadBuyerCatalog(); }
+
+function savedKey() { return 'shopwell:saved:' + (currentUser ? currentUser.id : 'guest'); }
+function getSavedIds() {
+  try { return JSON.parse(localStorage.getItem(savedKey()) || '[]').map(Number).filter(Number.isFinite); }
+  catch (e) { return []; }
+}
+function toggleSaved(id) {
+  const ids = getSavedIds();
+  const next = ids.includes(Number(id)) ? ids.filter(value => value !== Number(id)) : ids.concat(Number(id));
+  localStorage.setItem(savedKey(), JSON.stringify(next));
+  renderSavedCount(); loadBuyerCatalog(); renderSavedProducts();
+}
+function renderSavedCount() {
+  const count = getSavedIds().length;
+  document.getElementById('saved-count').textContent = count ? '(' + count + ')' : '';
+}
+function productCard(p) {
+  const isSaved = getSavedIds().includes(Number(p.id));
+  const oos = p.stock === 0;
+  return '<article class="product-card">'
+    + '<div class="product-card-thumb" aria-hidden="true">' + productMark(p.name) + '</div>'
+    + '<div class="product-card-body">'
+    + '<div class="product-card-name" title="' + escH(p.name) + '">' + escH(p.name) + '</div>'
+    + '<div class="product-card-price">$' + Number(p.price).toFixed(2) + '</div>'
+    + stockBadge(p.stock)
+    + '<div class="product-card-footer"><button class="btn btn-primary btn-sm btn-full" style="margin-top:.625rem" '
+    + (oos ? 'disabled' : '') + ' onclick="buyProduct(' + Number(p.id) + ')">' + (oos ? 'Out of stock' : 'Buy now') + '</button>'
+    + '<button class="btn save-button" type="button" aria-label="' + (isSaved ? 'Remove from saved items' : 'Save for later') + '" aria-pressed="' + isSaved + '" title="' + (isSaved ? 'Remove saved item' : 'Save for later') + '" onclick="toggleSaved(' + Number(p.id) + ')">' + (isSaved ? 'Saved' : 'Save') + '</button></div>'
+    + '</div></article>';
+}
+function renderSavedProducts(products) {
+  const grid = document.getElementById('saved-grid');
+  if (!grid) return;
+  const ids = getSavedIds();
+  if (!ids.length) { grid.innerHTML = '<div class="saved-empty">Your saved list is empty. Use Save on a product to keep it here.</div>'; return; }
+  if (!products) { fetch('/api/products').then(res => res.json()).then(all => renderSavedProducts(all)); return; }
+  const saved = products.filter(p => ids.includes(Number(p.id)));
+  grid.innerHTML = saved.length ? saved.map(productCard).join('') : '<div class="saved-empty">Those products are no longer available in the catalogue.</div>';
+}
+
+/* ─────── BUYER ─────── */
+async function loadBuyerCatalog() {
+  const q = document.getElementById('b-search').value.trim();
+  const res = await fetch('/api/products' + (q ? '?search=' + encodeURIComponent(q) : ''));
+  let products = await res.json();
+  const availability = document.getElementById('catalog-stock').value;
+  const sort = document.getElementById('catalog-sort').value;
+  if (availability === 'available') products = products.filter(p => p.stock > 0);
+  if (availability === 'low') products = products.filter(p => p.stock > 0 && p.stock < 5);
+  products.sort((a,b) => sort === 'price-asc' ? a.price-b.price : sort === 'price-desc' ? b.price-a.price : sort === 'name' ? a.name.localeCompare(b.name) : Number(a.stock === 0)-Number(b.stock === 0));
+  const grid = document.getElementById('product-grid');
+  if (!products.length) { grid.innerHTML = emptyState('No products found. Try a different search.'); return; }
+  grid.innerHTML = products.map(productCard).join('');
+  renderSavedCount();
+  renderSavedProducts();
+}
+
+async function buyProduct(id) {
+  const qty = await prompt2('Purchase Product', 'Quantity to order', '1', 'number');
+  if (qty === null || qty.trim() === '' || isNaN(Number(qty)) || Number(qty) < 1) return;
+  const res = await fetch('/api/orders', {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ action: 'place', buyer_id: currentUser.id, product_id: id, quantity: qty })
+  });
+  const d = await res.json();
+  if (d.success) { toast('Order placed!', 'Your order is confirmed and pending dispatch.', 'success'); loadBuyerCatalog(); }
+  else toast('Could not place order', d.message, 'error');
+}
+
+async function loadBuyerOrders() {
+  const res = await fetch('/api/orders?buyer_id=' + currentUser.id);
+  const orders = await res.json();
+  const el = document.getElementById('buyer-orders-list');
+  if (!orders.length) { el.innerHTML = emptyState('You have not placed any orders yet.'); return; }
+  el.innerHTML = orders.map(o =>
+    '<div class="order-card">'
+    + '<div class="order-card-header">'
+    + '<strong>Order #' + o.id + '</strong> <span style="color:var(--text-secondary)">' + escH(o.product) + '</span>'
+    + '<div>' + statusBadge(o.status) + '</div>'
+    + '</div>'
+    + '<div class="order-card-body">'
+    + '<div class="order-meta">'
+    + '<div><div class="order-meta-label">Quantity</div><div class="order-meta-value">' + o.qty + '</div></div>'
+    + '<div><div class="order-meta-label">Total Paid</div><div class="order-meta-value" style="color:var(--violet)">$' + o.total.toFixed(2) + '</div></div>'
+    + '</div>'
+    + orderTimeline(o.status)
+    + '</div></div>'
+  ).join('');
+}
+
+/* ─────── SELLER ─────── */
+async function loadSellerStats() {
+  const [pRes, oRes] = await Promise.all([fetch('/api/products?seller_id=' + currentUser.id), fetch('/api/orders?seller_id=' + currentUser.id)]);
+  const products = await pRes.json();
+  const orders = await oRes.json();
+  const lowStock = products.filter(p => p.stock < 5 && p.stock > 0).length;
+  const outOfStock = products.filter(p => p.stock === 0).length;
+  const revenue = orders.filter(o => o.status !== 'Cancelled').reduce((a, o) => a + o.total, 0);
+  document.getElementById('seller-stats').innerHTML = [
+    { label: 'Total Products', value: products.length, sub: 'In your catalogue' },
+    { label: 'Total Orders', value: orders.length, sub: 'Placed on your products' },
+    { label: 'Revenue', value: '$' + revenue.toFixed(2), sub: 'Excluding cancelled' },
+    { label: 'Low Stock', value: lowStock, sub: outOfStock + ' out of stock' },
+  ].map(s => '<div class="stat-card"><div class="stat-label">' + s.label + '</div><div class="stat-value">' + s.value + '</div><div class="stat-sub">' + s.sub + '</div></div>').join('');
+}
+
+async function loadSellerProducts() {
+  const res = await fetch('/api/products?seller_id=' + currentUser.id);
+  const products = await res.json();
+  const tbody = document.getElementById('seller-product-tbody');
+  const banner = document.getElementById('low-stock-banner');
+  const low = products.filter(p => p.stock < 5);
+  if (low.length) { banner.textContent = 'Low stock: ' + low.map(p => p.name + ' (' + p.stock + ' left)').join(', '); banner.classList.add('show'); }
+  else banner.classList.remove('show');
+  if (!products.length) { tbody.innerHTML = '<tr><td colspan="5">' + emptyState('No products yet. Add your first product.') + '</td></tr>'; return; }
+  tbody.innerHTML = products.map(p =>
+    '<tr>'
+    + '<td style="color:var(--text-muted)">#' + p.id + '</td>'
+    + '<td style="font-weight:500">' + escH(p.name) + '</td>'
+    + '<td>$' + p.price.toFixed(2) + '</td>'
+    + '<td>' + stockBadge(p.stock) + '</td>'
+    + '<td><div style="display:flex;gap:.5rem">'
+    + '<button class="btn btn-ghost btn-sm" onclick="sellerUpdateStock(' + p.id + ',' + p.stock + ')">Update stock</button>'
+    + '<button class="btn btn-danger btn-sm" onclick="sellerDeleteProduct(' + p.id + ')">Remove</button>'
+    + '</div></td></tr>'
+  ).join('');
+}
+
+async function submitAddProduct() {
+  const name = document.getElementById('mp-name').value.trim();
+  const price = document.getElementById('mp-price').value;
+  const stock = document.getElementById('mp-stock').value;
+  if (!name || !price || !stock) { toast('Missing fields', 'Please fill in all product details.', 'warning'); return; }
+  const res = await fetch('/api/products', {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ action: 'add', seller_id: currentUser.id, name, price, stock })
+  });
+  const d = await res.json();
+  closeModal('add-product-modal');
+  if (d.success) {
+    toast('Product added', 'Your product is now live in the catalogue.', 'success');
+    document.getElementById('mp-name').value = '';
+    document.getElementById('mp-price').value = '';
+    document.getElementById('mp-stock').value = '';
+    loadSellerProducts(); loadSellerStats();
+  } else toast('Failed to add product', d.message, 'error');
+}
+
+async function sellerUpdateStock(id, current) {
+  const val = await prompt2('Update Stock', 'New stock quantity', String(current), 'number');
+  if (val === null) return;
+  const res = await fetch('/api/products', {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ action: 'updateStock', id, stock: val })
+  });
+  const d = await res.json();
+  if (d.success) { toast('Stock updated', 'Inventory updated successfully.', 'success'); loadSellerProducts(); loadSellerStats(); }
+  else toast('Update failed', d.message, 'error');
+}
+
+async function sellerDeleteProduct(id) {
+  const ok = await confirm2('Remove Product', 'This will permanently remove the product from the catalogue.', 'Remove');
+  if (!ok) return;
+  await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ action: 'delete', id }) });
+  toast('Product removed', 'The product has been removed.', 'success');
+  loadSellerProducts(); loadSellerStats();
+}
+
+async function loadSellerOrders() {
+  const res = await fetch('/api/orders?seller_id=' + currentUser.id);
+  const orders = await res.json();
+  const tbody = document.getElementById('seller-order-tbody');
+  if (!orders.length) { tbody.innerHTML = '<tr><td colspan="7">' + emptyState('No orders received yet.') + '</td></tr>'; return; }
+  tbody.innerHTML = orders.map(o =>
+    '<tr>'
+    + '<td style="color:var(--text-muted)">#' + o.id + '</td>'
+    + '<td>' + escH(o.buyer) + '</td>'
+    + '<td>' + escH(o.product) + '</td>'
+    + '<td>' + o.qty + '</td>'
+    + '<td style="font-weight:600">$' + o.total.toFixed(2) + '</td>'
+    + '<td>' + statusBadge(o.status) + '</td>'
+    + '<td><div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">'
+    + '<select id="ss-' + o.id + '" style="width:105px;padding:5px 8px;font-size:.8rem">'
+    + '<option ' + (o.status === 'Pending' ? 'selected' : '') + '>Pending</option>'
+    + '<option ' + (o.status === 'Shipped' ? 'selected' : '') + '>Shipped</option>'
+    + '<option ' + (o.status === 'Delivered' ? 'selected' : '') + '>Delivered</option>'
+    + '<option ' + (o.status === 'Cancelled' ? 'selected' : '') + '>Cancelled</option>'
+    + '</select>'
+    + '<button class="btn btn-success btn-sm" onclick="updateOrderStatus(' + o.id + ',\'ss-' + o.id + '\',\'seller\')">Save</button>'
+    + '</div></td></tr>'
+  ).join('');
+}
+
+/* ─────── ADMIN ─────── */
+async function loadAdminStats() {
+  const [uRes, pRes, oRes] = await Promise.all([fetch('/api/users'), fetch('/api/products'), fetch('/api/orders')]);
+  const users = await uRes.json();
+  const products = await pRes.json();
+  const orders = await oRes.json();
+  const revenue = orders.filter(o => o.status !== 'Cancelled').reduce((a, o) => a + o.total, 0);
+  const pending = orders.filter(o => o.status === 'Pending').length;
+  document.getElementById('admin-stats').innerHTML = [
+    { label: 'Total Users', value: users.length, sub: users.filter(u => u.role === 'SELLER').length + ' sellers, ' + users.filter(u => u.role === 'BUYER').length + ' buyers' },
+    { label: 'Total Products', value: products.length, sub: products.filter(p => p.stock < 5).length + ' low stock' },
+    { label: 'Total Orders', value: orders.length, sub: pending + ' pending fulfilment' },
+    { label: 'Platform Revenue', value: '$' + revenue.toFixed(2), sub: 'All confirmed orders' },
+  ].map(s => '<div class="stat-card"><div class="stat-label">' + s.label + '</div><div class="stat-value">' + s.value + '</div><div class="stat-sub">' + s.sub + '</div></div>').join('');
+}
+
+async function loadAdminUsers() {
+  const res = await fetch('/api/users');
+  const users = await res.json();
+  const tbody = document.getElementById('admin-user-tbody');
+  if (!users.length) { tbody.innerHTML = '<tr><td colspan="5">' + emptyState('No users found.') + '</td></tr>'; return; }
+  tbody.innerHTML = users.map(u =>
+    '<tr>'
+    + '<td style="color:var(--text-muted)">#' + u.id + '</td>'
+    + '<td style="font-weight:500">' + escH(u.name) + '</td>'
+    + '<td style="color:var(--text-secondary)">' + escH(u.email) + '</td>'
+    + '<td>' + roleBadge(u.role) + '</td>'
+    + '<td><button class="btn btn-danger btn-sm" onclick="adminDeleteUser(' + u.id + ',\'' + escH(u.name) + '\')">Delete</button></td>'
+    + '</tr>'
+  ).join('');
+}
+
+async function submitAddUser() {
+  const name = document.getElementById('mu-name').value.trim();
+  const email = document.getElementById('mu-email').value.trim();
+  const password = document.getElementById('mu-pass').value;
+  const role = document.getElementById('mu-role').value;
+  if (!name || !email || !password) { toast('Missing fields', 'Please fill in all required fields.', 'warning'); return; }
+  const res = await fetch('/api/users', {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ action: 'add', name, email, password, role })
+  });
+  const d = await res.json();
+  closeModal('add-user-modal');
+  if (d.success) {
+    toast('User created', 'Account has been created successfully.', 'success');
+    document.getElementById('mu-name').value = '';
+    document.getElementById('mu-email').value = '';
+    document.getElementById('mu-pass').value = '';
+    loadAdminUsers(); loadAdminStats();
+  } else toast('Failed to create user', d.message, 'error');
+}
+
+async function adminDeleteUser(id, name) {
+  const ok = await confirm2('Delete User', 'Delete "' + name + '"? This cannot be undone.', 'Delete');
+  if (!ok) return;
+  await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ action: 'delete', id }) });
+  toast('User deleted', 'Account removed.', 'success');
+  loadAdminUsers(); loadAdminStats();
+}
+
+async function loadAdminProducts() {
+  const res = await fetch('/api/products');
+  const products = await res.json();
+  const tbody = document.getElementById('admin-product-tbody');
+  if (!products.length) { tbody.innerHTML = '<tr><td colspan="6">' + emptyState('No products on the platform yet.') + '</td></tr>'; return; }
+  tbody.innerHTML = products.map(p =>
+    '<tr>'
+    + '<td style="color:var(--text-muted)">#' + p.id + '</td>'
+    + '<td style="color:var(--text-muted)">#' + p.sellerId + '</td>'
+    + '<td style="font-weight:500">' + escH(p.name) + '</td>'
+    + '<td>$' + p.price.toFixed(2) + '</td>'
+    + '<td>' + stockBadge(p.stock) + '</td>'
+    + '<td><button class="btn btn-danger btn-sm" onclick="adminDeleteProduct(' + p.id + ')">Remove</button></td>'
+    + '</tr>'
+  ).join('');
+}
+
+async function adminDeleteProduct(id) {
+  const ok = await confirm2('Remove Product', 'Remove this product from the platform permanently?', 'Remove');
+  if (!ok) return;
+  await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ action: 'delete', id }) });
+  toast('Product removed', 'Product has been delisted.', 'success');
+  loadAdminProducts(); loadAdminStats();
+}
+
+async function loadAdminOrders() {
+  const res = await fetch('/api/orders');
+  const orders = await res.json();
+  const tbody = document.getElementById('admin-order-tbody');
+  if (!orders.length) { tbody.innerHTML = '<tr><td colspan="7">' + emptyState('No orders placed yet.') + '</td></tr>'; return; }
+  tbody.innerHTML = orders.map(o =>
+    '<tr>'
+    + '<td style="color:var(--text-muted)">#' + o.id + '</td>'
+    + '<td>' + escH(o.buyer) + '</td>'
+    + '<td>' + escH(o.product) + '</td>'
+    + '<td>' + o.qty + '</td>'
+    + '<td style="font-weight:600">$' + o.total.toFixed(2) + '</td>'
+    + '<td>' + statusBadge(o.status) + '</td>'
+    + '<td><div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">'
+    + '<select id="as-' + o.id + '" style="width:105px;padding:5px 8px;font-size:.8rem">'
+    + '<option ' + (o.status === 'Pending' ? 'selected' : '') + '>Pending</option>'
+    + '<option ' + (o.status === 'Shipped' ? 'selected' : '') + '>Shipped</option>'
+    + '<option ' + (o.status === 'Delivered' ? 'selected' : '') + '>Delivered</option>'
+    + '<option ' + (o.status === 'Cancelled' ? 'selected' : '') + '>Cancelled</option>'
+    + '</select>'
+    + '<button class="btn btn-success btn-sm" onclick="updateOrderStatus(' + o.id + ',\'as-' + o.id + '\',\'admin\')">Save</button>'
+    + '</div></td></tr>'
+  ).join('');
+}
+
+async function updateOrderStatus(orderId, selectId, role) {
+  const status = document.getElementById(selectId).value;
+  const res = await fetch('/api/orders', {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ action: 'updateStatus', id: orderId, status })
+  });
+  const d = await res.json();
+  if (d.success) {
+    toast('Status updated', 'Order #' + orderId + ' marked as ' + status + '.', 'success');
+    if (role === 'seller') loadSellerOrders(); else loadAdminOrders();
+  } else toast('Update failed', d.message, 'error');
+}
+</script>
+</body>
+</html>

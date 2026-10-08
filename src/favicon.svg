@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Shopwell mark">
+  <rect width="48" height="48" rx="9" fill="#f1edf1"/>
+  <path d="M24 8 38 20v19H10V20L24 8Z" fill="none" stroke="#6c586e" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M19 39V25h10v14M17 19h14" fill="none" stroke="#6c586e" stroke-width="2.5" stroke-linejoin="round"/>
+</svg>

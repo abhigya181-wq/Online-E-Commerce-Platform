@@ -14,7 +14,8 @@ RUN mkdir -p lib out && \
       curl -sSL -o lib/slf4j-api-1.7.36.jar https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar && \
       curl -sSL -o lib/slf4j-simple-1.7.36.jar https://repo1.maven.org/maven2/org/slf4j/slf4j-simple/1.7.36/slf4j-simple-1.7.36.jar ; \
     fi && \
-    javac -cp "lib/*" -d out src/*.java
+    javac -cp "lib/*" -d out src/*.java && \
+    cp src/index.html src/privacy.html src/terms.html src/favicon.svg out/
 
 # Production Runtime Stage (lean JRE image)
 FROM eclipse-temurin:21-jre-jammy

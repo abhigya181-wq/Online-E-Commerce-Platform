@@ -28,6 +28,7 @@ fi
 # Compile all source files into out/
 echo "==> Compiling Java sources..."
 javac -cp "lib/*" -d out src/*.java
+cp src/index.html src/privacy.html src/terms.html src/favicon.svg out/
 
 echo "============================================="
 echo "✅ Build completed successfully!"
