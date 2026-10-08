@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: ecommerce-java-platform
+    env: docker
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: DB_PATH
+        value: /app/data/shop.db

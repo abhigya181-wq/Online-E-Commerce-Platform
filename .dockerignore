@@ -1,0 +1,9 @@
+out/
+bin/
+*.class
+*.db
+*.sqlite
+*.log
+.git
+.idea/
+.vscode/

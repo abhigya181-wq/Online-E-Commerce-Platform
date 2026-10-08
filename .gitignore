@@ -1,0 +1,24 @@
+# Compiled class files
+out/
+bin/
+*.class
+
+# SQLite local database files (database is auto-created on start)
+*.db
+*.db-journal
+*.sqlite
+
+# IDE configuration files
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
