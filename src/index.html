@@ -139,6 +139,7 @@ tbody tr:hover{background:#FDFBFF}
 /* ── BADGES ── */
 .badge{display:inline-flex;align-items:center;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:4px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
 .badge-pending{background:#FEF6E8;color:#B06A00;border:1px solid #F0C98A}
+.badge-processing{background:#F1EDF2;color:#635367;border:1px solid #D5C9D7}
 .badge-shipped{background:#EBF3FE;color:#1A5FB4;border:1px solid #9EC5F8}
 .badge-delivered{background:#EBF5F0;color:#2E7D52;border:1px solid #B5DECA}
 .badge-cancelled{background:#FBF0F0;color:#9E2E2E;border:1px solid #E9B4B4}
@@ -222,8 +223,11 @@ input,select{min-height:42px;border-color:#dcd5cf;border-radius:5px}input:focus,
 .order-card{border-radius:8px;box-shadow:none}.order-card-header{gap:1rem;flex-wrap:wrap}.tl-dot{border-radius:3px}.tabs{border-color:#e6e0dc}
 .shop-intro{margin:0 0 1.8rem;padding:1.5rem 0 1.8rem;border-bottom:1px solid #e7e1dc}.shop-intro h1{font:500 clamp(2rem,4vw,2.7rem)/1.12 Georgia,serif;letter-spacing:-.035em;color:#342d35}.shop-intro p{margin-top:.6rem;max-width:620px;color:#6c646b;font-size:.98rem}
 .catalog-tools{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;margin:1.2rem 0 1.35rem}.catalog-tools .search-bar{flex:1;margin:0;min-width:min(100%,260px)}.catalog-tools .search-bar input{max-width:none}.catalog-tools select{width:auto;min-width:160px}.saved-empty{padding:2rem;border:1px dashed #dcd4ce;background:#fbfaf7;color:#6f676d;text-align:center}
+.cart-lines{border:1px solid #e8e2dd;background:#fff;border-radius:8px;overflow:hidden}.cart-line{display:grid;grid-template-columns:1fr auto auto auto;gap:1rem;align-items:center;padding:1rem 1.15rem;border-bottom:1px solid #eee9e4}.cart-line:last-child{border-bottom:0}.cart-line-name{font-weight:600}.cart-line-meta{font-size:.85rem;color:#716970}.cart-quantity{width:78px}.cart-summary{margin-top:1rem;margin-left:auto;max-width:390px;padding:1.25rem;background:#fff;border:1px solid #e8e2dd;border-radius:8px}.summary-row{display:flex;justify-content:space-between;gap:1rem;padding:.35rem 0;color:#655e64}.summary-total{border-top:1px solid #e9e3df;margin-top:.5rem;padding-top:.8rem;font-weight:700;color:#342e35}.checkout-note{padding:.8rem 1rem;background:#f5f2ee;color:#675c66;font-size:.85rem;line-height:1.5}.checkout-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 1rem}.checkout-form-grid .wide{grid-column:1/-1}.order-items{display:grid;gap:.45rem;margin:.5rem 0 1rem}.order-item-row{display:flex;justify-content:space-between;gap:1rem;color:#625b63}.order-delivery{padding:.8rem 1rem;background:#faf9f6;border:1px solid #eee9e4;border-radius:6px;color:#655e64;font-size:.85rem}.order-actions{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:1rem}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 footer{display:flex;justify-content:center;align-items:center;gap:1.2rem;flex-wrap:wrap;background:#fcfbf8;color:#756d72}footer a{color:#645468;text-underline-offset:3px}
 @media(max-width:640px){header{padding:0 1rem}.page{padding-top:1.5rem}.stats-row{grid-template-columns:repeat(2,minmax(0,1fr))}.stat-card:nth-child(2){border-right:0}.stat-card:nth-child(-n+2){border-bottom:1px solid #eee9e4}.catalog-tools{align-items:stretch}.catalog-tools select{flex:1}.auth-intro{text-align:left}.auth-intro p{margin-left:0}}
+@media(max-width:640px){.cart-line{grid-template-columns:1fr auto;gap:.6rem}.cart-line .cart-quantity{grid-column:2}.checkout-form-grid{grid-template-columns:1fr}.checkout-form-grid .wide{grid-column:auto}.cart-summary{max-width:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
 </head>
@@ -257,6 +261,29 @@ footer{display:flex;justify-content:center;align-items:center;gap:1.2rem;flex-wr
       <button class="btn btn-ghost" onclick="closeInput(false)">Cancel</button>
       <button class="btn btn-primary" onclick="closeInput(true)">OK</button>
     </div>
+  </div>
+</div>
+
+<!-- Demo checkout. No payment credentials are requested or processed. -->
+<div class="modal-overlay" id="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
+  <div class="modal">
+    <div class="modal-title" id="checkout-title">Delivery and payment</div>
+    <p class="modal-body">Enter a delivery address and choose a demo payment method. This checkout does not charge a card or contact a carrier.</p>
+    <div id="checkout-summary" class="checkout-note" style="margin-bottom:1rem"></div>
+    <form id="checkout-form" onsubmit="submitCheckout(event)">
+      <div class="checkout-form-grid">
+        <div class="form-group wide"><label for="co-name">Recipient name</label><input id="co-name" autocomplete="name" required maxlength="100"></div>
+        <div class="form-group wide"><label for="co-address">Street address</label><input id="co-address" autocomplete="street-address" required maxlength="180"></div>
+        <div class="form-group"><label for="co-city">City</label><input id="co-city" autocomplete="address-level2" required maxlength="80"></div>
+        <div class="form-group"><label for="co-postal">Postal code</label><input id="co-postal" autocomplete="postal-code" required maxlength="20"></div>
+        <div class="form-group wide"><label for="co-payment">Payment method</label><select id="co-payment"><option>Demo card</option><option>Cash on delivery</option></select></div>
+      </div>
+      <p class="checkout-note">Demo card only records your selection. Never enter card details here. No real payment is taken.</p>
+      <div class="modal-actions" style="margin-top:1rem">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('checkout-modal')">Back to cart</button>
+        <button type="submit" class="btn btn-primary" id="checkout-submit">Place demo order</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -322,12 +349,7 @@ footer{display:flex;justify-content:center;align-items:center;gap:1.2rem;flex-wr
         </div>
         <button type="submit" class="btn btn-primary btn-full" id="l-btn">Sign in</button>
       </form>
-      <div class="demo-accounts">
-        <h4>Demo accounts</h4>
-        <div class="demo-row"><span>Admin</span><span>admin@shop.com / admin123</span></div>
-        <div class="demo-row"><span>Seller</span><span>seller@shop.com / seller123</span></div>
-        <div class="demo-row"><span>Buyer</span><span>buyer@shop.com / buyer123</span></div>
-      </div>
+      <div class="checkout-note" style="margin-top:1rem">New to Shopwell? Create a buyer account to browse, save items, and try the demo checkout.</div>
     </div>
     <div class="auth-panel">
       <h2 class="auth-heading">Create an account</h2>
@@ -356,11 +378,12 @@ footer{display:flex;justify-content:center;align-items:center;gap:1.2rem;flex-wr
     <div class="container page">
       <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('buyer','catalog',this)">Browse Products</button>
+        <button class="tab-btn" onclick="switchTab('buyer','cart',this)">Cart <span id="cart-count"></span></button>
         <button class="tab-btn" onclick="switchTab('buyer','saved',this)">Saved <span id="saved-count"></span></button>
         <button class="tab-btn" onclick="switchTab('buyer','orders',this)">My Orders</button>
       </div>
       <div id="buyer-catalog" class="tab-content active">
-        <div class="shop-intro"><h1>Find something useful.</h1><p>Browse the current catalogue, check availability, and keep the items you are considering close at hand.</p></div>
+        <div class="shop-intro"><h1>Browse the current catalogue.</h1><p>Check current stock, compare prices, and add products to your cart.</p></div>
         <div class="search-bar">
           <input id="b-search" placeholder="Search products..." oninput="debouncedSearch()">
           <button class="btn btn-secondary btn-sm" onclick="clearSearch()">Clear</button>
@@ -368,6 +391,7 @@ footer{display:flex;justify-content:center;align-items:center;gap:1.2rem;flex-wr
         <div class="catalog-tools"><label for="catalog-sort" style="margin:0">Sort by</label><select id="catalog-sort" onchange="loadBuyerCatalog()"><option value="featured">Available first</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option><option value="name">Name</option></select><label for="catalog-stock" style="margin:0">Availability</label><select id="catalog-stock" onchange="loadBuyerCatalog()"><option value="all">All products</option><option value="available">In stock</option><option value="low">Low stock</option></select></div>
         <div id="product-grid" class="product-grid"></div>
       </div>
+      <div id="buyer-cart" class="tab-content"><div class="section-title">Your cart</div><div class="section-sub">Review quantities and delivery costs before placing your demo order.</div><div id="cart-content"></div></div>
       <div id="buyer-saved" class="tab-content"><div class="section-title">Saved for later</div><div class="section-sub">Your shortlist is stored in this browser and stays on this device.</div><div id="saved-grid" class="product-grid"></div></div>
       <div id="buyer-orders" class="tab-content">
         <div class="section-title">My Orders</div>
@@ -406,7 +430,7 @@ footer{display:flex;justify-content:center;align-items:center;gap:1.2rem;flex-wr
         <div class="section-sub">Update delivery status for orders on your products.</div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Order</th><th>Buyer</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th><th>Update</th></tr></thead>
+            <thead><tr><th>Order</th><th>Placed</th><th>Buyer</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th><th>Update</th></tr></thead>
             <tbody id="seller-order-tbody"></tbody>
           </table>
         </div>
@@ -457,7 +481,7 @@ footer{display:flex;justify-content:center;align-items:center;gap:1.2rem;flex-wr
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Order</th><th>Buyer</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th><th>Update</th></tr></thead>
+            <thead><tr><th>Order</th><th>Placed</th><th>Buyer</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th><th>Update</th></tr></thead>
             <tbody id="admin-order-tbody"></tbody>
           </table>
         </div>
@@ -474,6 +498,7 @@ footer{display:flex;justify-content:center;align-items:center;gap:1.2rem;flex-wr
 <script>
 'use strict';
 let currentUser = null, autoRefreshTimer = null;
+let catalogCache = [];
 
 /* ── TOAST ── */
 function toast(title, body, type) {
@@ -534,6 +559,7 @@ function switchTab(view, tab, btn) {
   document.getElementById(view + '-' + tab).classList.add('active');
   if (view === 'seller' && tab === 'sorders') loadSellerOrders();
   if (view === 'buyer' && tab === 'orders') loadBuyerOrders();
+  if (view === 'buyer' && tab === 'cart') renderCart();
   if (view === 'buyer' && tab === 'saved') renderSavedProducts();
   if (view === 'admin' && tab === 'aorders') loadAdminOrders();
   if (view === 'admin' && tab === 'products') loadAdminProducts();
@@ -580,12 +606,13 @@ function renderSession() {
   const myView = currentUser.role.toLowerCase();
   const el = document.getElementById('view-' + myView);
   if (el) el.style.display = 'block';
-  if (myView === 'buyer') { renderSavedCount(); loadBuyerCatalog(); }
+  if (myView === 'buyer') { renderSavedCount(); renderCartCount(); loadBuyerCatalog(); }
   if (myView === 'seller') { loadSellerStats(); loadSellerProducts(); }
   if (myView === 'admin') { loadAdminStats(); loadAdminUsers(); if (autoRefreshTimer) clearInterval(autoRefreshTimer); autoRefreshTimer = setInterval(loadAdminOrders, 3000); }
 }
 
 function logout() {
+  fetch('/api/logout', { method: 'POST' }).catch(() => {});
   currentUser = null;
   if (autoRefreshTimer) clearInterval(autoRefreshTimer);
   document.getElementById('auth-page').style.display = 'flex';
@@ -601,7 +628,7 @@ function stockBadge(s) {
   return '<span class="stock-ok">' + s + ' in stock</span>';
 }
 function statusBadge(s) {
-  const cl = { 'Pending': 'pending', 'Shipped': 'shipped', 'Delivered': 'delivered', 'Cancelled': 'cancelled' };
+  const cl = { 'Pending': 'pending', 'Processing':'processing', 'Shipped': 'shipped', 'Delivered': 'delivered', 'Cancelled': 'cancelled' };
   return '<span class="badge badge-' + (cl[s] || 'pending') + '">' + escH(s) + '</span>';
 }
 function roleBadge(r) {
@@ -609,7 +636,7 @@ function roleBadge(r) {
 }
 function productMark(name) { return escH(String(name || 'Product').trim().split(/\s+/).slice(0,2).map(part => part.charAt(0)).join('').toUpperCase()); }
 function orderTimeline(status) {
-  const steps = ['Pending', 'Shipped', 'Delivered'];
+  const steps = ['Pending', 'Processing', 'Shipped', 'Delivered'];
   if (status === 'Cancelled') return '<span class="badge badge-cancelled">Cancelled</span>';
   const idx = steps.indexOf(status);
   let html = '<div class="order-timeline">';
@@ -630,6 +657,92 @@ function debouncedSearch() { clearTimeout(_searchTimer); _searchTimer = setTimeo
 function clearSearch() { document.getElementById('b-search').value = ''; loadBuyerCatalog(); }
 
 function savedKey() { return 'shopwell:saved:' + (currentUser ? currentUser.id : 'guest'); }
+function cartKey() { return 'shopwell:cart:' + (currentUser ? currentUser.id : 'guest'); }
+function getCart() {
+  try { return JSON.parse(localStorage.getItem(cartKey()) || '[]').filter(row => row && Number(row.id) > 0 && Number(row.qty) > 0).map(row => ({id:Number(row.id),qty:Math.floor(Number(row.qty))})); }
+  catch (e) { return []; }
+}
+function saveCart(rows) { localStorage.setItem(cartKey(), JSON.stringify(rows)); renderCartCount(); }
+function renderCartCount() {
+  const count = getCart().reduce((sum,row) => sum + row.qty, 0);
+  const node = document.getElementById('cart-count');
+  if (node) node.textContent = count ? '(' + count + ')' : '';
+}
+function addToCart(id) {
+  const cart = getCart();
+  const row = cart.find(item => item.id === Number(id));
+  if (row) row.qty += 1; else cart.push({id:Number(id),qty:1});
+  saveCart(cart); toast('Added to cart', 'You can adjust quantity or check out from your cart.', 'success');
+}
+function setCartQuantity(id, value) {
+  const quantity = Math.floor(Number(value));
+  const cart = getCart().filter(row => row.id !== Number(id));
+  if (quantity > 0) cart.push({id:Number(id),qty:quantity});
+  saveCart(cart); renderCart();
+}
+function removeFromCart(id) { saveCart(getCart().filter(row => row.id !== Number(id))); renderCart(); }
+function cartTotals(subtotal) {
+  const shipping = subtotal >= 50 ? 0 : subtotal === 0 ? 0 : 5.99;
+  const tax = Math.round(subtotal * .08 * 100) / 100;
+  return {subtotal,shipping,tax,total:Math.round((subtotal + shipping + tax) * 100) / 100};
+}
+async function renderCart() {
+  const target = document.getElementById('cart-content');
+  if (!target || !currentUser) return;
+  const cart = getCart();
+  if (!cart.length) { target.innerHTML = '<div class="saved-empty">Your cart is empty. Add a product from Browse Products to get started.</div>'; return; }
+  const response = await fetch('/api/products');
+  if (!response.ok) { target.innerHTML = emptyState('We could not load the current catalogue. Please try again.'); return; }
+  const products = await response.json();
+  const rows = cart.map(row => ({...row,product:products.find(p => Number(p.id) === row.id)})).filter(row => row.product);
+  if (rows.length !== cart.length) saveCart(rows.map(row => ({id:row.id,qty:row.qty})));
+  if (!rows.length) { target.innerHTML = '<div class="saved-empty">Products in this cart are no longer available. Browse the catalogue to start again.</div>'; return; }
+  const subtotal = rows.reduce((sum,row) => sum + Number(row.product.price) * row.qty, 0);
+  const totals = cartTotals(subtotal);
+  const stockOkay = rows.every(row => row.product.stock > 0 && row.qty <= row.product.stock);
+  target.innerHTML = '<div class="cart-lines">' + rows.map(row =>
+    '<div class="cart-line"><div><div class="cart-line-name">' + escH(row.product.name) + '</div><div class="cart-line-meta">$' + Number(row.product.price).toFixed(2) + ' each · ' + stockBadge(row.product.stock) + '</div></div>' +
+    '<label class="sr-only" for="cart-qty-' + row.id + '">Quantity for ' + escH(row.product.name) + '</label><input class="cart-quantity" id="cart-qty-' + row.id + '" type="number" min="1" max="' + Math.max(1,row.product.stock) + '" value="' + row.qty + '" onchange="setCartQuantity(' + row.id + ',this.value)">' +
+    '<strong>$' + (Number(row.product.price) * row.qty).toFixed(2) + '</strong><button class="btn btn-ghost btn-sm" onclick="removeFromCart(' + row.id + ')">Remove</button></div>'
+  ).join('') + '</div>' +
+  '<div class="cart-summary"><div class="summary-row"><span>Items</span><span>$' + totals.subtotal.toFixed(2) + '</span></div>' +
+  '<div class="summary-row"><span>Demo tax (8%)</span><span>$' + totals.tax.toFixed(2) + '</span></div><div class="summary-row"><span>Shipping</span><span>' + (totals.shipping ? '$' + totals.shipping.toFixed(2) : 'Free') + '</span></div>' +
+  '<div class="summary-row summary-total"><span>Estimated total</span><span>$' + totals.total.toFixed(2) + '</span></div>' +
+  '<p class="cart-line-meta" style="margin:.7rem 0">' + (stockOkay ? (totals.shipping ? 'Free demo shipping on orders of $50 or more.' : 'Your cart qualifies for free demo shipping.') : 'One or more quantities exceed current stock. Adjust the cart before checkout.') + '</p>' +
+  '<button class="btn btn-primary btn-full" ' + (!stockOkay ? 'disabled' : '') + ' onclick="openCheckout(' + totals.total.toFixed(2) + ')">Continue to delivery</button></div>';
+  renderCartCount();
+}
+function openCheckout(total) {
+  document.getElementById('checkout-summary').textContent = 'Demo order total: $' + Number(total).toFixed(2) + '. Tax and shipping are estimates for this prototype.';
+  document.getElementById('co-name').value = currentUser ? currentUser.name : '';
+  openModal('checkout-modal');
+}
+async function submitCheckout(event) {
+  event.preventDefault();
+  const cart = getCart();
+  if (!cart.length) { toast('Your cart is empty', 'Add a product before checking out.', 'warning'); closeModal('checkout-modal'); return; }
+  const button = document.getElementById('checkout-submit');
+  button.disabled = true; button.textContent = 'Placing order...';
+  try {
+    const body = new URLSearchParams({
+      action:'checkout', items:cart.map(row => row.id + ':' + row.qty).join(','),
+      name:document.getElementById('co-name').value.trim(),
+      address:document.getElementById('co-address').value.trim(),
+      city:document.getElementById('co-city').value.trim(),
+      postal:document.getElementById('co-postal').value.trim(),
+      payment:document.getElementById('co-payment').value
+    });
+    const response = await fetch('/api/orders', {method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body});
+    const data = await response.json();
+    if (!response.ok || !data.success) { toast('Could not place order', data.message || 'Please review your cart and try again.', 'error'); return; }
+    localStorage.removeItem(cartKey());
+    closeModal('checkout-modal'); renderCartCount();
+    toast('Order placed', 'Confirmation ' + data.checkoutId.slice(0,8).toUpperCase() + '. This is a demo order; no payment was taken.', 'success');
+    document.querySelector('#view-buyer .tab-btn:nth-child(4)').click();
+    loadBuyerOrders();
+  } catch (error) { toast('Connection problem', 'Your cart is still saved. Please try again.', 'error'); }
+  finally { button.disabled = false; button.textContent = 'Place demo order'; }
+}
 function getSavedIds() {
   try { return JSON.parse(localStorage.getItem(savedKey()) || '[]').map(Number).filter(Number.isFinite); }
   catch (e) { return []; }
@@ -654,7 +767,7 @@ function productCard(p) {
     + '<div class="product-card-price">$' + Number(p.price).toFixed(2) + '</div>'
     + stockBadge(p.stock)
     + '<div class="product-card-footer"><button class="btn btn-primary btn-sm btn-full" style="margin-top:.625rem" '
-    + (oos ? 'disabled' : '') + ' onclick="buyProduct(' + Number(p.id) + ')">' + (oos ? 'Out of stock' : 'Buy now') + '</button>'
+    + (oos ? 'disabled' : '') + ' onclick="addToCart(' + Number(p.id) + ')">' + (oos ? 'Out of stock' : 'Add to cart') + '</button>'
     + '<button class="btn save-button" type="button" aria-label="' + (isSaved ? 'Remove from saved items' : 'Save for later') + '" aria-pressed="' + isSaved + '" title="' + (isSaved ? 'Remove saved item' : 'Save for later') + '" onclick="toggleSaved(' + Number(p.id) + ')">' + (isSaved ? 'Saved' : 'Save') + '</button></div>'
     + '</div></article>';
 }
@@ -679,22 +792,50 @@ async function loadBuyerCatalog() {
   if (availability === 'low') products = products.filter(p => p.stock > 0 && p.stock < 5);
   products.sort((a,b) => sort === 'price-asc' ? a.price-b.price : sort === 'price-desc' ? b.price-a.price : sort === 'name' ? a.name.localeCompare(b.name) : Number(a.stock === 0)-Number(b.stock === 0));
   const grid = document.getElementById('product-grid');
+  catalogCache = products;
   if (!products.length) { grid.innerHTML = emptyState('No products found. Try a different search.'); return; }
   grid.innerHTML = products.map(productCard).join('');
   renderSavedCount();
   renderSavedProducts();
 }
 
-async function buyProduct(id) {
-  const qty = await prompt2('Purchase Product', 'Quantity to order', '1', 'number');
-  if (qty === null || qty.trim() === '' || isNaN(Number(qty)) || Number(qty) < 1) return;
-  const res = await fetch('/api/orders', {
-    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ action: 'place', buyer_id: currentUser.id, product_id: id, quantity: qty })
+function formatOrderDate(value) {
+  if (!value) return 'Date unavailable';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? 'Date unavailable' : new Intl.DateTimeFormat(undefined, {dateStyle:'medium'}).format(date);
+}
+function estimatedDelivery(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  date.setDate(date.getDate() + 5);
+  return new Intl.DateTimeFormat(undefined, {dateStyle:'medium'}).format(date);
+}
+function deliverySummary(order) {
+  if (order.status === 'Delivered') return 'Delivery: marked complete';
+  if (order.status === 'Cancelled') return 'Delivery: cancelled';
+  const estimate = estimatedDelivery(order.createdAt);
+  return estimate ? 'Estimated delivery (demo): ' + estimate : 'Delivery estimate unavailable';
+}
+async function cancelBuyerOrder(checkoutId) {
+  if (!await confirm2('Cancel this order?', 'Items that have not shipped will be cancelled and returned to stock.', 'Cancel order')) return;
+  const response = await fetch('/api/orders', {method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'cancel',checkoutId})});
+  const data = await response.json();
+  if (!response.ok || !data.success) { toast('Could not cancel order', data.message || 'Please refresh and try again.', 'error'); return; }
+  toast('Order cancelled', 'The items were returned to inventory.', 'success');
+  loadBuyerOrders(); loadBuyerCatalog();
+}
+async function reorder(checkoutId) {
+  const response = await fetch('/api/orders?checkout_id=' + encodeURIComponent(checkoutId));
+  if (!response.ok) { toast('Could not reorder', 'Please try again in a moment.', 'error'); return; }
+  const oldOrders = await response.json();
+  const cart = getCart();
+  oldOrders.forEach(order => {
+    const existing = cart.find(item => item.id === Number(order.productId));
+    if (existing) existing.qty += Number(order.qty); else cart.push({id:Number(order.productId),qty:Number(order.qty)});
   });
-  const d = await res.json();
-  if (d.success) { toast('Order placed!', 'Your order is confirmed and pending dispatch.', 'success'); loadBuyerCatalog(); }
-  else toast('Could not place order', d.message, 'error');
+  saveCart(cart); toast('Added to cart', 'Available items from this order are ready to review.', 'success');
+  document.querySelector('#view-buyer .tab-btn:nth-child(2)').click(); renderCart();
 }
 
 async function loadBuyerOrders() {
@@ -702,20 +843,24 @@ async function loadBuyerOrders() {
   const orders = await res.json();
   const el = document.getElementById('buyer-orders-list');
   if (!orders.length) { el.innerHTML = emptyState('You have not placed any orders yet.'); return; }
-  el.innerHTML = orders.map(o =>
-    '<div class="order-card">'
-    + '<div class="order-card-header">'
-    + '<strong>Order #' + o.id + '</strong> <span style="color:var(--text-secondary)">' + escH(o.product) + '</span>'
-    + '<div>' + statusBadge(o.status) + '</div>'
-    + '</div>'
-    + '<div class="order-card-body">'
-    + '<div class="order-meta">'
-    + '<div><div class="order-meta-label">Quantity</div><div class="order-meta-value">' + o.qty + '</div></div>'
-    + '<div><div class="order-meta-label">Total Paid</div><div class="order-meta-value" style="color:var(--violet)">$' + o.total.toFixed(2) + '</div></div>'
-    + '</div>'
-    + orderTimeline(o.status)
-    + '</div></div>'
-  ).join('');
+  const groups = new Map();
+  orders.forEach(order => {
+    const key = order.checkoutId || 'order-' + order.id;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(order);
+  });
+  el.innerHTML = Array.from(groups.entries()).map(([checkoutId,items]) => {
+    const order = items[0];
+    const sum = items.reduce((value,item) => value + Number(item.total),0);
+    const total = Number(order.checkoutTotal) > 0 ? Number(order.checkoutTotal) : sum;
+    const canCancel = Boolean(order.checkoutId) && items.some(item => item.status === 'Pending' || item.status === 'Processing') && items.every(item => item.status === 'Pending' || item.status === 'Processing' || item.status === 'Cancelled');
+    return '<div class="order-card"><div class="order-card-header"><strong>Order ' + escH(checkoutId.slice(0,8).toUpperCase()) + '</strong><span class="cart-line-meta">Placed ' + formatOrderDate(order.createdAt) + '</span><div>' + statusBadge(order.status) + '</div></div>' +
+      '<div class="order-card-body"><div class="order-items">' + items.map(item => '<div class="order-item-row"><span>' + escH(item.product) + ' · ' + item.qty + ' · ' + statusBadge(item.status) + '</span><span>$' + Number(item.total).toFixed(2) + '</span></div>').join('') + '</div>' +
+      '<div class="order-delivery">Delivering to ' + escH(order.shippingName || currentUser.name) + ', ' + escH(order.shippingAddress || 'Address not recorded') + ', ' + escH(order.shippingCity || '') + ' ' + escH(order.shippingPostal || '') + '<br>Payment: ' + escH(order.paymentMethod || 'Demo checkout') + '<br>' + deliverySummary(order) + '</div>' +
+      '<div class="order-meta" style="margin-top:1rem;margin-bottom:.2rem"><div><div class="order-meta-label">Items</div><div class="order-meta-value">$' + sum.toFixed(2) + '</div></div><div><div class="order-meta-label">Demo tax</div><div class="order-meta-value">$' + Number(order.tax).toFixed(2) + '</div></div><div><div class="order-meta-label">Shipping</div><div class="order-meta-value">' + (Number(order.shipping) ? '$' + Number(order.shipping).toFixed(2) : 'Free') + '</div></div><div><div class="order-meta-label">Order total</div><div class="order-meta-value" style="color:var(--violet)">$' + total.toFixed(2) + '</div></div></div>' +
+      (items.length > 1 ? '<p class="cart-line-meta">Items may be fulfilled separately.</p>' : '') + orderTimeline(order.status) +
+      '<div class="order-actions">' + (order.checkoutId ? '<button class="btn btn-secondary btn-sm" onclick="reorder(\'' + escH(checkoutId) + '\')">Add these items to cart</button>' : '') + (canCancel ? '<button class="btn btn-ghost btn-sm" onclick="cancelBuyerOrder(\'' + escH(checkoutId) + '\')">Cancel unshipped items</button>' : '') + '</div></div></div>';
+  }).join('');
 }
 
 /* ─────── SELLER ─────── */
@@ -804,6 +949,7 @@ async function loadSellerOrders() {
   tbody.innerHTML = orders.map(o =>
     '<tr>'
     + '<td style="color:var(--text-muted)">#' + o.id + '</td>'
+    + '<td>' + formatOrderDate(o.createdAt) + '</td>'
     + '<td>' + escH(o.buyer) + '</td>'
     + '<td>' + escH(o.product) + '</td>'
     + '<td>' + o.qty + '</td>'
@@ -812,6 +958,7 @@ async function loadSellerOrders() {
     + '<td><div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">'
     + '<select id="ss-' + o.id + '" style="width:105px;padding:5px 8px;font-size:.8rem">'
     + '<option ' + (o.status === 'Pending' ? 'selected' : '') + '>Pending</option>'
+    + '<option ' + (o.status === 'Processing' ? 'selected' : '') + '>Processing</option>'
     + '<option ' + (o.status === 'Shipped' ? 'selected' : '') + '>Shipped</option>'
     + '<option ' + (o.status === 'Delivered' ? 'selected' : '') + '>Delivered</option>'
     + '<option ' + (o.status === 'Cancelled' ? 'selected' : '') + '>Cancelled</option>'
@@ -915,6 +1062,7 @@ async function loadAdminOrders() {
   tbody.innerHTML = orders.map(o =>
     '<tr>'
     + '<td style="color:var(--text-muted)">#' + o.id + '</td>'
+    + '<td>' + formatOrderDate(o.createdAt) + '</td>'
     + '<td>' + escH(o.buyer) + '</td>'
     + '<td>' + escH(o.product) + '</td>'
     + '<td>' + o.qty + '</td>'
@@ -923,6 +1071,7 @@ async function loadAdminOrders() {
     + '<td><div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">'
     + '<select id="as-' + o.id + '" style="width:105px;padding:5px 8px;font-size:.8rem">'
     + '<option ' + (o.status === 'Pending' ? 'selected' : '') + '>Pending</option>'
+    + '<option ' + (o.status === 'Processing' ? 'selected' : '') + '>Processing</option>'
     + '<option ' + (o.status === 'Shipped' ? 'selected' : '') + '>Shipped</option>'
     + '<option ' + (o.status === 'Delivered' ? 'selected' : '') + '>Delivered</option>'
     + '<option ' + (o.status === 'Cancelled' ? 'selected' : '') + '>Cancelled</option>'
@@ -944,6 +1093,10 @@ async function updateOrderStatus(orderId, selectId, role) {
     if (role === 'seller') loadSellerOrders(); else loadAdminOrders();
   } else toast('Update failed', d.message, 'error');
 }
+
+fetch('/api/session').then(response => response.ok ? response.json() : null).then(data => {
+  if (data && data.success) { currentUser = data.user; renderSession(); }
+}).catch(() => {});
 </script>
 </body>
 </html>

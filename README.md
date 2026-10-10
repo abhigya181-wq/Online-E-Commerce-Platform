@@ -33,6 +33,8 @@ A comprehensive, full-featured E-Commerce platform built in Java with **both** a
 
 ## 🔑 Demo Login Accounts
 
+These seeded accounts are available only when running locally without a `PORT` environment variable. Passwords are stored as PBKDF2 hashes. Hosted deployments do not receive the public demo credentials.
+
 | Role | Email | Password | Permissions |
 |---|---|---|---|
 | **Admin** | `admin@shop.com` | `admin123` | System management, product moderation, all orders |
@@ -152,7 +154,7 @@ If you prefer deploying without Docker:
    {"status":"UP","timestamp":"...","service":"ecommerce-platform"}
    ```
 2. **Web App**: Open `https://<your-app-name>.onrender.com` to access the full interactive web application.
-3. Test logging in with `admin@shop.com` / `admin123`.
+3. To enable the admin dashboard, set `ADMIN_EMAIL` and `ADMIN_PASSWORD` (at least 12 characters) as private environment variables in Render before starting the service. `ADMIN_NAME` is optional. Without these values, buyers and sellers can register, but there is no hosted admin account.
 
 ---
 

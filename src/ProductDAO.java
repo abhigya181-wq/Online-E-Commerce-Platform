@@ -27,6 +27,15 @@ public class ProductDAO implements Manageable<Product> {
         }
     }
 
+    public void deleteForSeller(int id, int sellerId) throws SQLException {
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("DELETE FROM products WHERE id=? AND seller_id=?")) {
+            ps.setInt(1, id);
+            ps.setInt(2, sellerId);
+            if (ps.executeUpdate() != 1) throw new SQLException("Product not found for this seller.");
+        }
+    }
+
     // Updates the stock quantity of an existing product
     public void updateStock(int id, int stock) throws SQLException {
         String sql = "UPDATE products SET stock=? WHERE id=?";
@@ -35,6 +44,16 @@ public class ProductDAO implements Manageable<Product> {
             ps.setInt(1, stock);
             ps.setInt(2, id);
             ps.executeUpdate();
+        }
+    }
+
+    public void updateStockForSeller(int id, int stock, int sellerId) throws SQLException {
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement("UPDATE products SET stock=? WHERE id=? AND seller_id=?")) {
+            ps.setInt(1, stock);
+            ps.setInt(2, id);
+            ps.setInt(3, sellerId);
+            if (ps.executeUpdate() != 1) throw new SQLException("Product not found for this seller.");
         }
     }
 

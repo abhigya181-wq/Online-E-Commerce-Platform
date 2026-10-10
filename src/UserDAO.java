@@ -11,7 +11,7 @@ public class UserDAO implements Manageable<User> {
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, u.getName());
             ps.setString(2, u.getEmail());
-            ps.setString(3, u.getPassword());
+            ps.setString(3, PasswordUtil.hash(u.getPassword()));
             ps.setString(4, u.getRole());
             ps.executeUpdate();
         }
@@ -43,13 +43,20 @@ public class UserDAO implements Manageable<User> {
 
     // Authenticates user by email and password; returns matching polymorphic User or null
     public User login(String email, String password) throws SQLException {
-        String sql = "SELECT * FROM users WHERE email=? AND password=?";
+        String sql = "SELECT * FROM users WHERE email=?";
         try (Connection con = DBConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, email);
-            ps.setString(2, password);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
+                if (rs.next() && PasswordUtil.verify(password, rs.getString("password"))) {
+                    String stored = rs.getString("password");
+                    if (!PasswordUtil.isHashed(stored)) {
+                        try (PreparedStatement migrate = con.prepareStatement("UPDATE users SET password=? WHERE id=?")) {
+                            migrate.setString(1, PasswordUtil.hash(password));
+                            migrate.setInt(2, rs.getInt("id"));
+                            migrate.executeUpdate();
+                        }
+                    }
                     return makeUser(rs);
                 }
             }

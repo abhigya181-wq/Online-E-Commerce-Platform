@@ -14,16 +14,16 @@
   <header><a href="/">Shopwell</a></header>
   <main>
     <h1>Privacy</h1>
-    <p><small>Prototype privacy notice. Updated October 8, 2026.</small></p>
+    <p><small>Prototype privacy notice. Updated October 10, 2026.</small></p>
     <p>This page describes the current Shopwell prototype. The person or business operating a deployed copy must identify themselves and confirm this notice before opening the service to the public.</p>
     <h2>Information in the application</h2>
     <p>When an account is created, the application records a name, email address, password, and account role. Buyers' orders include the buyer account, product, quantity, total, and order status. Sellers' listings include product names, prices, and stock quantities. Administrators can view account and order records.</p>
     <p>The application stores these records in its configured SQLite database. The operator controls the server and database location, access, backups, and deletion. This prototype has no account deletion request workflow or defined retention schedule.</p>
-    <div class="notice"><strong>Before public use:</strong> this prototype currently stores passwords in its database without password hashing. Do not reuse a password from another service. The operator must replace this authentication storage and review server access controls before launch.</div>
+    <p>Passwords are stored as salted PBKDF2 hashes. Signing in creates a server-side session held in a secure, HTTP-only cookie. Existing prototype accounts are upgraded to hashed passwords when they next sign in.</p>
     <h2>Saved products and browser storage</h2>
     <p>A saved-products shortlist is kept in local storage in the browser on the device where it was created. It is not synced to your account or other devices. Clearing browser storage removes the shortlist.</p>
     <h2>Sharing and analytics</h2>
-    <p>The current app code does not intentionally include advertising trackers or analytics. Account and order information is available through the application's role dashboards. The operator should document any hosting, logging, email, analytics, or other third-party services added to a deployment.</p>
+    <p>The current app code does not intentionally include advertising trackers or analytics. Account and order information is available through the application's role dashboards. Demo checkout does not request or process card numbers, and it does not contact a payment provider. The operator should document any hosting, logging, email, analytics, or other third-party services added to a deployment.</p>
     <h2>Your choices and contact</h2>
     <p>For a live deployment, the operator must add a working contact address, identify the business responsible for the data, explain applicable access or deletion requests, and set retention periods based on the places where the service operates.</p>
     <p><a href="/">Return to Shopwell</a> · <a href="/terms">Terms</a></p>
